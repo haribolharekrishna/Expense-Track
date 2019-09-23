@@ -5,55 +5,159 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Personal Expense</title>
-    <style>
-    body
-    {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        flex-direction: column;
-    }
-    </style>
+    <link rel="javascript" href="script.js">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.7.0/css/all.css' integrity='sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ' crossorigin='anonymous'>
 </head>
 <body>
-    <h1 id="htotal"></h1>
-    <button id="btn">+</button>
-    <input id="inputamt" type="text">
-    <script>
-
-        const hele=document.querySelector("#htotal");
-
-        //init value of expense at 0
-        let totalexp=0;
-
-        hele.textContent=totalexp;
-    
-        //onbuttonclick add inputamt to total
-        function addexptototal()
-        {
-            //read the value of inputamt
-            const inputele=document.querySelector("#inputamt");
-            const textamt=inputele.value;
+    <nav class="navbar navbar-dark bg-dark">
+            <span class="navbar-brand mb-0 h1">Expenses</span>
+            <span class="navbar-brand mb-0 h1"id="htotal"></span>
+    </nav>
+    <div class="container-fluid bg-light" style="min-height: 100vh">
+        <div class="container">
+            <div class = "jumbotron">
+                    <div class="input-group mb-3">
+                        <input 
+                            type="text"
+                            class="form-control"
+                            id="inputamt"
+                            placeholder="Amount Spent"
+                            aria-label="Amount Spent"
+                            aria-describedby="rupee"
+                        >
+                        <div class="input-group-append">
+                            <span class="input-group-text" id="rupee">₹</span>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="spent st">@</span>
+                        </div>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="inputdesc" 
+                            placeholder="Spent On"
+                            aria-label="Spent On"
+                        >
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary"type="button"id="btn">Add</button>
+                        </div>
+                    </div>
         
-            //convert it to number
-            const exp=parseInt(textamt,10);
+                </div>
+            <div>
+                    <ul class="list-group" id="exptable"></ul>
+            </div>
+        </div>
+    </div>
+    <script>
+            const hele=document.querySelector("#htotal");
 
-            //add that value to totalvalue
-            totalexp=totalexp+exp;
-            
-            hele.textContent=totalexp;
-        }
-        //get the button element
-        const ele=document.querySelector("#btn");
-
-        //listen to click event
-        ele.addEventListener("click",addexptototal,false);
+            const inputele=document.querySelector("#inputamt");
+            const inputele2=document.querySelector("#inputdesc");
+            const exptableEle=document.querySelector("#exptable");
+            //init value of expense at 0
+            let totalexp=0;
 
 
+            const allexp=[];
+
+            //onbuttonclick add inputamt to total
+            function addexptototal()
+            {
+                const expobj={};
+                //read the value of inputamt
+                const textamt=inputele.value;
+
+                const textdesc=inputele2.value;
+
+                //convert it to number
+                const exp=parseInt(textamt,10);
+
+                expobj.desc=textdesc;
+                expobj.amt=textamt;
+                expobj.moment=new Date();
+
+                allexp.push(expobj);
+                
+                
+                //add that value to totalvalue
+                totalexp=totalexp+exp;
+                
+                hele.textContent=totalexp;
+
+                const headingtext=`Total :: ${totalexp}`;
+                hele.textContent=headingtext;
+
+                renderlist(allexp);
+                
+            }
+            //get the button element
+            const ele=document.querySelector("#btn");
+
+            //listen to click event
+            ele.addEventListener("click",addexptototal,false);
+
+            //controller function
+            function deleteitem(datevalue)
+            {
+                /*const newarr = [];
+                for(let i=0; i<allexp.length; i++)
+                {
+                    if(allexp[i].moment.valueOf()!==datevalue)
+                        newarr.push(allexp[i]);
+                }*/
+                const newarr=allexp.filter(expobj=>{
+                    if(expobj.moment.valueOf()!== datevalue)
+                    {
+                        return expobj;
+                    }
+                })
+                renderlist(newarr);
+            }
+            function getDate(moment)
+            {
+                return moment.toLocaleDateString('en-US',
+                {
+                    year : 'numeric',
+                    month : 'long',
+                    day : 'numeric',
+                });
+            }
 
 
-           
+            function renderlist(arr)
+            {
+                const allexphtml = arr.map(expobj=>createlist(expobj));
+                const allexphtmljoined = allexphtml.join('');
+                exptableEle.innerHTML=allexphtmljoined;
+
+
+            }
+            //view 
+            function createlist({ desc, amt, moment })
+            {
+                return `<li class="list-group-item d-flex justify-content-between">
+                            <div class="d-flex flex-column">
+                                    ${desc}
+                                <small class="text-muted">${getDate(moment)}</small>
+                            </div>
+                            <div>
+                                <span class="px-5">
+                                    ${amt}
+                                </span>
+                                <button 
+                                    type="button" 
+                                    class="btn btn-outline-danger btn-sm"
+                                    onclick="deleteitem(${moment.valueOf()})"
+                                    >
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </li>`
+            }
     </script>
 </body>
 </html>
